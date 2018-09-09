@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <div id = "new-dinner">
+        <h1><span>添加新的晚餐</span></h1>
+        <form>
+            <input type="text" id="dinner-name" placeholder="晚饭名称">
+            <input type="number" min="0" id="dinner-price" placeholder="晚饭权重">
+            <input type="button" id="dinner-add" value="add">
+        </form>
+        <hr>
+    </div>
+    <div id="random-div">
+        <h1><span>今天的晚餐是...</span></h1>
+        <h3><span id="rand-result"></span></h3>
+        <input type="button" id = "dinner-random" value="Random!">
+    </div>
+    <div id="dinner-list">
+        <hr>
+        <h1><span>菜单！</span></h1>
+        <ul id="menu-div"></ul>
+        <input type="button" id="menu-reset" value="Reset Menu!">
+    </div>
+</body>
+<script>
+    function Dinner(name,price){
+        this.pname = name;
+        this.price = price;
+    }
+
+    let menu = [];
+    let menuVer = 0;
+
+    //事件监听
+    function addEventHandler(target,type,fn){
+        if(target.addEventListener){
+            target.addEventListener(type,fn);
+        }else{
+            console.log('Error');
+        }
+    }
+
+    function removeEventHandler(target,type,fn){
+        if(target.removeEventListener){
+            target.removeEventListener(type,fn);
+        }else{
+            console.log('Error');
+        }
+    }
+
+    //添加
+    function add_dinner(name,price){//需要添加对name 和 price 的检查
+        let dinner = new Dinner(name,price);
+        console.log(dinner,name,price)
+        menu.push(dinner);
+    }
+
+    //展示
+    function show_menu(){
+        if(menu[0]){
+            let menu_div = document.getElementById("menu-div")
+            for(dinner of menu){
+                let node = document.createElement("li")
+                let txt = dinner.pname + ' : '+dinner.price
+                node.innerHTML = txt
+                menu_div.appendChild(node)
+            }
+        }
+    }
+
+
+    function clear_menu(){
+        if(menu[0]){
+            let menu_div = document.getElementById("menu-div")
+            while(menu_div.hasChildNodes()){
+                menu_div.removeChild(menu_div.firstChild)
+            }
+        }     
+    }
+
+    //随机
+    function random_choice(){
+        let array = []
+        if(menu[0]){
+            menu.forEach(element => {
+            array = array.concat(Array.apply(null,{length:element.price}).map(()=>element.pname))
+        });
+        let result = array[Math.floor(Math.random()*array.length)]
+        console.log(result,array)
+        document.getElementById("rand-result").innerHTML = ""
+        document.getElementById("rand-result").innerHTML = result
+        }else{
+            document.getElementById("rand-result").innerHTML = "菜单里还没菜呢！"
+        }
+    }
+
+    //本地存储
+    function store(){
+        if(menu[0]){
+            let newVer = parseInt(localStorage.getItem('menu_ver'))
+            newVer++
+            let constMenu =  JSON.stringify(menu)
+            console.log(newVer,constMenu)
+            localStorage.setItem('menu_ver',newVer) //存一次改一次
+            localStorage.setItem('menu',constMenu)
+            
+        }
+    }
+
+    function checkLocalVersion(){
+        if(localStorage.getItem('menu_ver')){
+            console.log(localStorage.getItem('menu_ver'))
+            menuVer = localStorage.getItem('menu_ver')
+        }
+        else{
+            localStorage.setItem('menu_ver','1')//赋初值
+        }
+    }
+
+    function extractMenu(){
+        if(localStorage.getItem('menu_ver')){
+            let tmpMenu = localStorage.getItem('menu')
+            menu = JSON.parse(tmpMenu)
+            menuVer = localStorage.getItem('menu_ver')
+            console.log(menu)
+            show_menu()//显示一次
+        }else{
+            console.log('no local menu.')
+        }
+    }
+
+    function resetMenu(){
+        if(menuVer>0){
+            localStorage.removeItem('menu_ver')//check后才添加，保证一定会有'menu'的存在
+            localStorage.removeItem('menu')
+            clear_menu()//清空显示
+        }
+    }
+
+    //
+    window.onload=function(){
+        let dinner_add = document.getElementById("dinner-add");
+        let rand = document.getElementById("dinner-random")
+        let resetM = document.getElementById("menu-reset")
+
+        // show_menu()被提取菜单替代
+        extractMenu()
+        addEventHandler(dinner_add,'click',()=>{
+            let name = document.getElementById("dinner-name").value;
+            let price = document.getElementById("dinner-price").value;//input 使用 .value
+            add_dinner(name,price);
+            document.getElementsByTagName('form')[0].reset()
+            checkLocalVersion()
+            store()
+            clear_menu()
+            show_menu()
+        })
+        addEventHandler(rand,'click',()=>{
+            random_choice()
+        }
+        )
+        addEventHandler(resetM,'click',()=>{
+            resetMenu()
+        }
+        )
+        
+    }
+
+</script>
+</html>
