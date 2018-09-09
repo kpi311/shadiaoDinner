@@ -102,14 +102,13 @@
 
     //本地存储
     function store(){
-        if(menu[0]){
+        if(menuVer){
             let newVer = parseInt(localStorage.getItem('menu_ver'))
-            newVer++
             let constMenu =  JSON.stringify(menu)
             console.log(newVer,constMenu)
             localStorage.setItem('menu_ver',newVer) //存一次改一次
             localStorage.setItem('menu',constMenu)
-            
+            menuVer = newVer//更新
         }
     }
 
@@ -119,7 +118,9 @@
             menuVer = localStorage.getItem('menu_ver')
         }
         else{
-            localStorage.setItem('menu_ver','1')//赋初值
+            menuVer = 1
+            localStorage.setItem('menu_ver',menuVer)//赋初值,同时把ver也赋上
+            
         }
     }
 
